@@ -4,6 +4,7 @@ import gradio as gr
 
 from providers.kokoro.adapter import VOICES, generate
 from providers.needle.adapter import transcribe
+from ui import LAB_CSS, build_theme
 
 
 def update_voices(language: str):
@@ -38,33 +39,61 @@ def run_stt(provider: str, audio_path: str | None):
 
 
 with gr.Blocks(title="Speech Lab") as app:
-    gr.Markdown("# Speech Lab")
-    gr.Markdown(
-        "A shared local interface for independent speech provider experiments. "
-        "Models run on this machine; the first use may download model assets."
+    gr.HTML(
+        '<header class="lab-header">'
+        '<p class="lab-eyebrow">Local speech experiments</p>'
+        '<h1>Speech Lab</h1>'
+        '<p>A small space to explore speech models.<br>'
+        'Turn text into audio, or audio into text.</p>'
+        '</header>',
+        apply_default_css=False,
     )
 
-    with gr.Tabs():
+    with gr.Tabs(elem_id="lab-tabs"):
         with gr.Tab("Text to speech"):
-            tts_provider = gr.Dropdown(
-                choices=["Kokoro"], value="Kokoro", label="Model / provider"
-            )
-            gr.Markdown(
-                "Kokoro · Spanish voices are general Latin American, "
-                "not specifically trained for Peruvian Spanish."
-            )
-            tts_language = gr.Dropdown(
-                choices=list(VOICES), value="Español latinoamericano", label="Language"
-            )
-            tts_voice = gr.Dropdown(
-                choices=list(VOICES["Español latinoamericano"].items()),
-                value="ef_dora",
-                label="Voice",
-            )
-            tts_language.change(update_voices, inputs=tts_language, outputs=tts_voice)
-            tts_text = gr.Textbox(label="Text", lines=5, placeholder="Type what you want to hear…")
-            tts_button = gr.Button("Generate audio", variant="primary")
-            tts_output = gr.Audio(label="Generated audio")
+            with gr.Row(elem_classes="lab-workspace"):
+                with gr.Column(
+                    scale=3, min_width=360, variant="panel", elem_classes="lab-panel"
+                ):
+                    gr.Markdown("## Input", elem_classes="lab-section")
+                    with gr.Column(min_width=0, elem_classes="lab-config"):
+                        gr.Markdown("### Model settings", elem_classes="lab-config-title")
+                        tts_provider = gr.Dropdown(
+                            choices=["Kokoro"], value="Kokoro", label="Model / provider"
+                        )
+                        with gr.Column(elem_classes="lab-settings"):
+                            tts_language = gr.Dropdown(
+                                choices=list(VOICES),
+                                value="Español latinoamericano",
+                                label="Language",
+                                min_width=0,
+                            )
+                            tts_voice = gr.Dropdown(
+                                choices=list(VOICES["Español latinoamericano"].items()),
+                                value="ef_dora",
+                                label="Voice",
+                                min_width=0,
+                            )
+                    tts_language.change(
+                        update_voices, inputs=tts_language, outputs=tts_voice
+                    )
+                    tts_text = gr.Textbox(
+                        label="Text", lines=6, placeholder="Type what you want to hear…"
+                    )
+                    tts_button = gr.Button(
+                        "Generate audio", variant="primary", elem_classes="lab-action"
+                    )
+                with gr.Column(
+                    scale=2,
+                    min_width=280,
+                    variant="panel",
+                    elem_classes=["lab-panel", "lab-result"],
+                ):
+                    gr.Markdown("## Audio output", elem_classes="lab-section")
+                    tts_output = gr.Audio(label="Generated audio", interactive=False)
+                    gr.Markdown(
+                        "Kokoro · 24 kHz · Speed 1.0", elem_classes="lab-note"
+                    )
             tts_button.click(
                 run_tts,
                 inputs=[tts_provider, tts_text, tts_language, tts_voice],
@@ -72,24 +101,55 @@ with gr.Blocks(title="Speech Lab") as app:
             )
 
         with gr.Tab("Speech to text"):
-            stt_provider = gr.Dropdown(
-                choices=["Needle / Whistle"],
-                value="Needle / Whistle",
-                label="Model / provider",
-            )
-            gr.Markdown(
-                "Needle / Whistle · Automatic language detection; documented support "
-                "includes Spanish and English."
-            )
-            stt_audio = gr.Audio(
-                label="Audio", sources=["upload", "microphone"], type="filepath"
-            )
-            stt_button = gr.Button("Transcribe", variant="primary")
-            stt_output = gr.Textbox(label="Transcript", lines=8)
+            with gr.Row(elem_classes="lab-workspace"):
+                with gr.Column(
+                    scale=3, min_width=360, variant="panel", elem_classes="lab-panel"
+                ):
+                    gr.Markdown("## Input", elem_classes="lab-section")
+                    with gr.Column(min_width=0, elem_classes="lab-config"):
+                        gr.Markdown("### Model settings", elem_classes="lab-config-title")
+                        stt_provider = gr.Dropdown(
+                            choices=["Needle / Whistle"],
+                            value="Needle / Whistle",
+                            label="Model / provider",
+                        )
+                    stt_audio = gr.Audio(
+                        label="Audio", sources=["upload", "microphone"], type="filepath"
+                    )
+                    gr.Markdown(
+                        "Upload or record audio you are authorized to use.",
+                        elem_classes="lab-note",
+                    )
+                    stt_button = gr.Button(
+                        "Transcribe", variant="primary", elem_classes="lab-action"
+                    )
+                with gr.Column(
+                    scale=2,
+                    min_width=280,
+                    variant="panel",
+                    elem_classes=["lab-panel", "lab-result"],
+                ):
+                    gr.Markdown("## Transcript", elem_classes="lab-section")
+                    stt_output = gr.Textbox(
+                        label="Transcript",
+                        lines=10,
+                        interactive=False,
+                        placeholder="Your transcript will appear here.",
+                    )
+                    gr.Markdown(
+                        "Automatic language detection. Supports Spanish, English, "
+                        "and other documented Whistle languages.",
+                        elem_classes="lab-note",
+                    )
             stt_button.click(
                 run_stt, inputs=[stt_provider, stt_audio], outputs=stt_output
             )
+    gr.HTML(
+        '<p class="lab-footer">Models run on this machine. '
+        'First use may download model assets.</p>',
+        apply_default_css=False,
+    )
 
 
 if __name__ == "__main__":
-    app.launch()
+    app.launch(theme=build_theme(), css=LAB_CSS, footer_links=[])

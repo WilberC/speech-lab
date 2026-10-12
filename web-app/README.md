@@ -29,7 +29,8 @@ Kokoro's extra includes PyTorch, and uv installs the version resolved in `uv.loc
 
 ## Run
 
-From the repository root, start the full lab with one command:
+From the repository root, start the full lab with one command. The Gradio
+development runner watches the app for changes and reloads it automatically:
 
 ```sh
 ./run.sh
@@ -38,6 +39,21 @@ From the repository root, start the full lab with one command:
 The script synchronizes both provider extras, then starts the app. It uses `mise exec -- uv` when mise is available and falls back to `uv` on `PATH`. To install just one provider, follow the `uv sync --extra ...` setup above and run `uv run python app.py` from this directory instead.
 
 Open the local Gradio URL (typically `http://127.0.0.1:7860`). Choose the **Text to speech** or **Speech to text** tab. The UI reports which optional package to install if a selected provider is missing.
+
+## Interface development
+
+`ui.py` defines the cream/coral theme and responsive layout. It uses native Gradio
+theme tokens, with matching light and dark token values so system preferences
+cannot introduce dark components. `app.py` passes the theme and CSS to `launch()`
+(the Gradio 6 API). The development runner watches both Python files.
+
+The input and result panels sit side by side on desktop and stack on mobile.
+Theme integration checks do not run inference or download models:
+
+```sh
+cd web-app
+mise exec -- uv run python -m unittest discover -s tests -v
+```
 
 ## Cleanup
 

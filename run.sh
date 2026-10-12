@@ -14,4 +14,4 @@ else
 fi
 
 "${UV[@]}" sync --extra kokoro --extra needle
-exec "${UV[@]}" run python app.py
+exec "${UV[@]}" run gradio app.py
