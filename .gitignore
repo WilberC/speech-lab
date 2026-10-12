@@ -1,0 +1,18 @@
+# Local credentials and environment files
+.env
+.env.*
+!.env.example
+
+# Generated audio, transcripts, exports, and experiment results
+exports/
+**/exports/
+results/
+**/results/
+output/
+**/output/
+outputs/
+**/outputs/
+# Common local caches
+.cache/
+__pycache__/
+*.py[cod]
