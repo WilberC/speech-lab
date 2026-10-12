@@ -1,0 +1,13 @@
+[project]
+name = "speech-lab-web"
+version = "0.1.0"
+description = "Shared local web interface for Speech Lab TTS and STT experiments"
+requires-python = ">=3.10"
+dependencies = ["gradio"]
+
+[project.optional-dependencies]
+kokoro = ["kokoro", "numpy"]
+needle = ["cactus-needle"]
+
+[tool.uv]
+package = false

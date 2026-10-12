@@ -14,5 +14,8 @@ outputs/
 **/outputs/
 # Common local caches
 .cache/
+.venv/
+**/.venv/
+.gradio/
 __pycache__/
 *.py[cod]

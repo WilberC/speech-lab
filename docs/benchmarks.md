@@ -14,5 +14,12 @@ Use this small log to keep measured comparisons with the repository. Keep audio,
 
 No scenarios have been measured yet.
 
+The shared web interface and its Kokoro and Whistle scenarios are documented
+but have not been run end-to-end in this environment. Their benchmark rows
+remain pending until model inference is performed with a documented input and
+settings.
+
 | Date | Modality / scenario | Input | Provider / model | Settings (language, etc.) | Runs | Elapsed time | Extra metric (units) | Quality / cost | Notes |
 | --- | --- | --- | --- | --- | ---: | ---: | --- | --- | --- |
+| pending | TTS / shared Speech Lab UI | user-entered text (record exact text before run) | Kokoro | Spanish `e` or US English `a`; selected voice; speed 1; 24 kHz | pending | pending | generated duration / RTF | pending | No inference run recorded yet. |
+| pending | STT / shared Speech Lab UI | authorized audio (record sample ID, duration, and format before run) | Cactus Needle / Whistle | automatic language detection; package defaults | pending | pending | RTF | pending | No inference run recorded yet. |
