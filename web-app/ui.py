@@ -150,6 +150,44 @@ html, body, gradio-app { background: #faf9f5 !important; color-scheme: light; }
 .lab-action { min-height: 44px !important; }
 .lab-action:disabled { opacity: .55; }
 .lab-footer { text-align: center; padding-top: 20px; font-size: .8rem; color: #6c6a64; }
+.toast-body.error .toast-messages {
+    max-block-size: min(32vh, 16rem);
+    overflow: auto;
+    overflow-wrap: anywhere;
+    overscroll-behavior: contain;
+}
+.toast-message-text.error { white-space: pre-wrap; overflow-wrap: anywhere; }
+.lab-copy-error {
+    display: block;
+    min-height: 40px;
+    margin: 8px 0 0 auto;
+    padding: 7px 12px;
+    color: #141413;
+    background: #fffdf9;
+    border: 1px solid #a9583e;
+    border-radius: 6px;
+    font: inherit;
+    font-size: .8rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.lab-copy-error:hover { background: #efe9de; }
+.lab-copy-error:focus-visible { outline: 2px solid #a9583e; outline-offset: 2px; }
+.lab-copy-transcript {
+    display: block;
+    min-height: 32px;
+    margin: 8px 0 0 auto;
+    padding: 4px 10px;
+    color: #3d3d3a;
+    background: #faf9f5;
+    border: 1px solid #c8b9a7;
+    border-radius: 6px;
+    font: inherit;
+    font-size: .78rem;
+    cursor: pointer;
+}
+.lab-copy-transcript:hover { background: #efe9de; }
+.lab-copy-transcript:focus-visible { outline: 2px solid #a9583e; outline-offset: 2px; }
 .gradio-container button:focus-visible { outline: 2px solid #a9583e; outline-offset: 3px; }
 @media (max-width: 767px) {
     #lab-tabs .tab-container button { padding-inline: 12px !important; }
@@ -159,5 +197,89 @@ html, body, gradio-app { background: #faf9f5 !important; color-scheme: light; }
     .lab-config { padding: 16px !important; }
     .lab-workspace { flex-direction: column; }
     .lab-workspace > .lab-panel { min-width: 0 !important; width: 100%; }
+}
+"""
+
+ERROR_COPY_JS = """
+const root = element.getRootNode();
+if (!root.__speechLabErrorCopyObserver) {
+    const addCopyButtons = () => {
+        for (const toast of root.querySelectorAll('.toast-body.error[role="status"]')) {
+            if (toast.querySelector('.lab-copy-error')) continue;
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'lab-copy-error';
+            button.textContent = 'Copy error';
+            button.setAttribute('aria-label', 'Copy all error details');
+            button.setAttribute('aria-live', 'polite');
+            button.addEventListener('click', async () => {
+                const title = toast.querySelector('.toast-title')?.innerText.trim() || 'Error';
+                const details = Array.from(
+                    toast.querySelectorAll('[data-testid="toast-text"]'),
+                    (message) => message.innerText.trim()
+                ).filter(Boolean).join('\\n\\n');
+                const content = [title, details].filter(Boolean).join('\\n\\n');
+                try {
+                    await navigator.clipboard.writeText(content);
+                } catch {
+                    const clipboardField = document.createElement('textarea');
+                    clipboardField.value = content;
+                    clipboardField.style.position = 'fixed';
+                    clipboardField.style.opacity = '0';
+                    document.body.appendChild(clipboardField);
+                    clipboardField.select();
+                    const copied = document.execCommand('copy');
+                    clipboardField.remove();
+                    if (!copied) {
+                        button.textContent = 'Copy failed';
+                        button.setAttribute('aria-label', 'Copying error details failed');
+                        return;
+                    }
+                }
+                button.textContent = 'Copied';
+                button.setAttribute('aria-label', 'Error details copied');
+                window.setTimeout(() => {
+                    if (button.isConnected) {
+                        button.textContent = 'Copy error';
+                        button.setAttribute('aria-label', 'Copy all error details');
+                    }
+                }, 1500);
+            });
+            const timer = toast.querySelector('.timer');
+            toast.insertBefore(button, timer);
+        }
+    };
+    addCopyButtons();
+    root.__speechLabErrorCopyObserver = new MutationObserver(addCopyButtons);
+    root.__speechLabErrorCopyObserver.observe(root, { childList: true, subtree: true });
+}
+"""
+
+TRANSCRIPT_COPY_JS = """
+const root = element.getRootNode();
+if (!root.__speechLabTranscriptCopyHandler) {
+    root.addEventListener('click', async (event) => {
+        const button = event.target.closest('.lab-copy-transcript');
+        if (!button) return;
+        const transcript = button.closest('.lab-result')?.querySelector('textarea')?.value;
+        if (!transcript?.trim()) return;
+        try {
+            await navigator.clipboard.writeText(transcript);
+        } catch {
+            const field = document.createElement('textarea');
+            field.value = transcript;
+            field.style.position = 'fixed';
+            field.style.opacity = '0';
+            document.body.appendChild(field);
+            field.select();
+            const copied = document.execCommand('copy');
+            field.remove();
+            if (!copied) return;
+        }
+        const original = button.textContent;
+        button.textContent = 'Copied';
+        window.setTimeout(() => { if (button.isConnected) button.textContent = original; }, 1500);
+    });
+    root.__speechLabTranscriptCopyHandler = true;
 }
 """

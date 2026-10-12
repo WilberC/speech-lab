@@ -7,7 +7,7 @@ dependencies = ["gradio"]
 
 [project.optional-dependencies]
 kokoro = ["kokoro", "numpy"]
-needle = ["cactus-needle"]
+needle = ["cactus-needle", "soxr"]
 
 [tool.uv]
 package = false

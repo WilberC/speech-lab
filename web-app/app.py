@@ -4,7 +4,7 @@ import gradio as gr
 
 from providers.kokoro.adapter import VOICES, generate
 from providers.needle.adapter import transcribe
-from ui import LAB_CSS, build_theme
+from ui import ERROR_COPY_JS, LAB_CSS, TRANSCRIPT_COPY_JS, build_theme
 
 
 def update_voices(language: str):
@@ -114,7 +114,10 @@ with gr.Blocks(title="Speech Lab") as app:
                             label="Model / provider",
                         )
                     stt_audio = gr.Audio(
-                        label="Audio", sources=["upload", "microphone"], type="filepath"
+                        label="Audio",
+                        sources=["upload", "microphone"],
+                        type="filepath",
+                        format="wav",
                     )
                     gr.Markdown(
                         "Upload or record audio you are authorized to use.",
@@ -136,6 +139,12 @@ with gr.Blocks(title="Speech Lab") as app:
                         interactive=False,
                         placeholder="Your transcript will appear here.",
                     )
+                    gr.HTML(
+                        '<button type="button" class="lab-copy-transcript" '
+                        'aria-label="Copy transcript text">Copy transcript</button>',
+                        apply_default_css=False,
+                        js_on_load=TRANSCRIPT_COPY_JS,
+                    )
                     gr.Markdown(
                         "Automatic language detection. Supports Spanish, English, "
                         "and other documented Whistle languages.",
@@ -148,8 +157,9 @@ with gr.Blocks(title="Speech Lab") as app:
         '<p class="lab-footer">Models run on this machine. '
         'First use may download model assets.</p>',
         apply_default_css=False,
+        js_on_load=ERROR_COPY_JS,
     )
 
 
 if __name__ == "__main__":
-    app.launch(theme=build_theme(), css=LAB_CSS, footer_links=[])
+    app.launch(theme=build_theme(), css=LAB_CSS, show_error=True, footer_links=[])

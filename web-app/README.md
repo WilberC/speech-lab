@@ -5,7 +5,7 @@ One local Gradio interface exposes the currently integrated TTS and STT labs. Pr
 ## Included providers
 
 - **TTS — Kokoro:** general Latin American Spanish (`ef_dora`, `em_alex`, `em_santa`) and US English (`af_heart`, `af_bella`, `am_michael`), speed 1, 24 kHz output. Spanish voices are not specifically trained for Peruvian Spanish. Listen to samples from the [original Kokoro model](https://huggingface.co/hexgrad/Kokoro-82M) before choosing.
-- **STT — Needle / Whistle:** local transcription via `needle.transcribe`, automatic language detection, package defaults. Whistle documents support for English, German, French, Spanish, Italian, Dutch, and Polish; it accepts 16 kHz mono audio and windows audio longer than 30 seconds.
+- **STT — Needle / Whistle:** local transcription via `needle.transcribe`, automatic language detection, package defaults. Whistle documents support for English, German, French, Spanish, Italian, Dutch, and Polish; non-WAV uploads and recordings are converted to WAV, then resampled to 16 kHz mono. Audio longer than 30 seconds is windowed.
 
 Both providers run on the local machine. The first inference may download model assets; generated audio is not a repository fixture. Use only synthetic, licensed, or explicitly authorized recordings.
 
@@ -16,12 +16,16 @@ The project uses **uv** for dependency management and commits `uv.lock` so the s
 ```sh
 sudo apt update
 sudo apt install -y python3 python3-venv python3-pip
+# Required for non-WAV uploads and recordings in the STT interface:
+sudo apt install -y ffmpeg
 # Kokoro requires espeak-ng (skip this if using only Needle / Whistle):
 sudo apt install -y espeak-ng
 
 cd web-app
 uv sync --extra kokoro --extra needle
 ```
+
+FFmpeg decodes non-WAV STT uploads and recordings. The Needle extra includes `soxr` for resampling and mono conversion before transcription.
 
 To install only the shared UI and one provider, use `uv sync --extra kokoro` or `uv sync --extra needle`. For just the shared UI, run `uv sync`. These commands create and manage the local `.venv`.
 
@@ -48,6 +52,8 @@ cannot introduce dark components. `app.py` passes the theme and CSS to `launch()
 (the Gradio 6 API). The development runner watches both Python files.
 
 The input and result panels sit side by side on desktop and stack on mobile.
+Runtime errors appear in a compact, scrollable alert with a button to copy the
+full error details.
 Theme integration checks do not run inference or download models:
 
 ```sh

@@ -6,8 +6,9 @@ from pathlib import Path
 from unittest.mock import patch
 
 import gradio as gr
+from gradio.data_classes import FileData
 
-from ui import LAB_CSS, build_theme
+from ui import ERROR_COPY_JS, LAB_CSS, build_theme
 
 
 class ThemeTests(unittest.TestCase):
@@ -35,8 +36,29 @@ class ThemeTests(unittest.TestCase):
         launch.assert_called_once()
         self.assertEqual(launch.call_args.kwargs["css"], LAB_CSS)
         self.assertIsInstance(launch.call_args.kwargs["theme"], gr.themes.Base)
+        self.assertTrue(launch.call_args.kwargs["show_error"])
+        self.assertEqual(namespace["ERROR_COPY_JS"], ERROR_COPY_JS)
+        self.assertIn("navigator.clipboard.writeText(content)", ERROR_COPY_JS)
+        self.assertIn("Copy all error details", ERROR_COPY_JS)
+        self.assertIn("Error details copied", ERROR_COPY_JS)
+        self.assertIn("max-block-size: min(32vh, 16rem)", LAB_CSS)
         self.assertFalse(namespace["tts_output"].interactive)
         self.assertFalse(namespace["stt_output"].interactive)
+        self.assertEqual(namespace["stt_audio"].format, "wav")
+        for source_path in ("/tmp/uploaded.mp3", "/tmp/recorded.webm"):
+            with self.subTest(source=source_path):
+                with (
+                    patch(
+                        "gradio.components.audio.processing_utils.audio_from_file",
+                        return_value=(44_100, [0]),
+                    ),
+                    patch("gradio.components.audio.processing_utils.audio_to_file") as convert,
+                ):
+                    normalized_path = namespace["stt_audio"].preprocess(
+                        FileData(path=source_path)
+                    )
+                self.assertEqual(normalized_path, source_path.rsplit(".", 1)[0] + ".wav")
+                convert.assert_called_once()
         blocks = namespace["app"].blocks.values()
         settings_sections = [
             block
