@@ -23,9 +23,11 @@ Speech Lab is an experimental workspace for exploring, integrating, and comparin
 7. Do not choose a shared programming language, framework, or dependency manager prematurely. Introduce tooling when an experiment needs it, and document the choice and setup.
 8. Add tests for stable reusable behavior; exploratory work may remain a standalone experiment, but it should clearly state its purpose and how to run it.
 9. Update this guide when the repository structure or contribution conventions materially change.
+10. Every runnable scenario must document its input, language, provider/model, relevant settings, and how to run it. When adding or changing a scenario, run it and record the measured result in `docs/benchmarks.md` when execution is possible; label unrun scenarios as pending rather than inventing results.
+11. Keep comparisons reproducible: compare the same input and equivalent settings, record the date and number of runs, and report elapsed time (plus a useful modality-specific measure such as real-time factor when available). Record quality/cost metrics only when measured, and note meaningful limitations.
 
 ## Security and generated artifacts
 
-10. Never stage or commit `.env` files, credentials, API keys, access tokens, or private recordings. Keep local secrets in the configured external secret store; use a sanitized `.env.example` only when documenting required variable names.
-11. Keep generated audio, exports, model outputs, and experiment results out of Git by default. Store only small, explicitly authorized fixtures and reference transcripts under `samples/`; review provenance and licensing before adding them.
-12. Before committing or pushing, inspect the staged file list and diff for secrets and generated artifacts. Do not assume `.gitignore` protects files that are already tracked.
+12. Never stage or commit `.env` files, credentials, API keys, access tokens, or private recordings. Keep local secrets in the configured external secret store; use a sanitized `.env.example` only when documenting required variable names.
+13. Keep generated audio, exports, raw outputs, and bulky run artifacts out of Git by default. Store only small, explicitly authorized fixtures and reference transcripts under `samples/`; review provenance and licensing before adding them. Keep concise measured summaries and comparison tables in `docs/benchmarks.md`.
+14. Before committing or pushing, inspect the staged file list and diff for secrets and generated artifacts. Do not assume `.gitignore` protects files that are already tracked.
