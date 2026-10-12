@@ -3,7 +3,7 @@
 import gradio as gr
 
 from providers.kokoro.adapter import VOICES, generate
-from providers.needle.adapter import transcribe
+from providers.needle.adapter import SUPPORTED_LANGUAGES, transcribe
 from ui import ERROR_COPY_JS, LAB_CSS, TRANSCRIPT_COPY_JS, build_theme
 
 
@@ -25,11 +25,11 @@ def run_tts(provider: str, text: str, language: str, voice: str):
         raise gr.Error(str(error)) from error
 
 
-def run_stt(provider: str, audio_path: str | None):
+def run_stt(provider: str, audio_path: str | None, language: str):
     if provider != "Needle / Whistle":
         raise gr.Error("Choose an available speech-to-text provider.")
     try:
-        return transcribe(audio_path)
+        return transcribe(audio_path, language)
     except (ImportError, ModuleNotFoundError) as error:
         raise gr.Error(
             "Needle dependencies are missing. From web-app/, run: uv sync --extra needle."
@@ -113,6 +113,14 @@ with gr.Blocks(title="Speech Lab") as app:
                             value="Needle / Whistle",
                             label="Model / provider",
                         )
+                        stt_language = gr.Dropdown(
+                            choices=[
+                                (name, code)
+                                for name, code in SUPPORTED_LANGUAGES.items()
+                            ],
+                            value=SUPPORTED_LANGUAGES["Español"],
+                            label="Transcription language",
+                        )
                     stt_audio = gr.Audio(
                         label="Audio",
                         sources=["upload", "microphone"],
@@ -146,12 +154,14 @@ with gr.Blocks(title="Speech Lab") as app:
                         js_on_load=TRANSCRIPT_COPY_JS,
                     )
                     gr.Markdown(
-                        "Automatic language detection. Supports Spanish, English, "
-                        "and other documented Whistle languages.",
+                        "Choose English or Spanish before transcribing. "
+                        "Other languages are not supported in this lab.",
                         elem_classes="lab-note",
                     )
             stt_button.click(
-                run_stt, inputs=[stt_provider, stt_audio], outputs=stt_output
+                run_stt,
+                inputs=[stt_provider, stt_audio, stt_language],
+                outputs=stt_output,
             )
     gr.HTML(
         '<p class="lab-footer">Models run on this machine. '

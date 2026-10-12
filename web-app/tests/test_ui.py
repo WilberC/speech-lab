@@ -44,6 +44,11 @@ class ThemeTests(unittest.TestCase):
         self.assertIn("max-block-size: min(32vh, 16rem)", LAB_CSS)
         self.assertFalse(namespace["tts_output"].interactive)
         self.assertFalse(namespace["stt_output"].interactive)
+        self.assertEqual(
+            namespace["stt_language"].choices,
+            [("Español", "es"), ("English", "en")],
+        )
+        self.assertEqual(namespace["stt_language"].value, "es")
         self.assertEqual(namespace["stt_audio"].format, "wav")
         for source_path in ("/tmp/uploaded.mp3", "/tmp/recorded.webm"):
             with self.subTest(source=source_path):

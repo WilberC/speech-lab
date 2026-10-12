@@ -5,9 +5,16 @@ One local Gradio interface exposes the currently integrated TTS and STT labs. Pr
 ## Included providers
 
 - **TTS — Kokoro:** general Latin American Spanish (`ef_dora`, `em_alex`, `em_santa`) and US English (`af_heart`, `af_bella`, `am_michael`), speed 1, 24 kHz output. Spanish voices are not specifically trained for Peruvian Spanish. Listen to samples from the [original Kokoro model](https://huggingface.co/hexgrad/Kokoro-82M) before choosing.
-- **STT — Needle / Whistle:** local transcription via `needle.transcribe`, automatic language detection, package defaults. Whistle documents support for English, German, French, Spanish, Italian, Dutch, and Polish; non-WAV uploads and recordings are converted to WAV, then resampled to 16 kHz mono. Audio longer than 30 seconds is windowed.
+- **STT — Needle / Whistle:** local transcription via `needle.transcribe`. This lab exposes only English and Spanish and passes the selected language to Whistle; the package's other supported languages are intentionally not offered. Non-WAV uploads and recordings are converted to WAV, then resampled to 16 kHz mono. Audio longer than 30 seconds is windowed.
 
 Both providers run on the local machine. The first inference may download model assets; generated audio is not a repository fixture. Use only synthetic, licensed, or explicitly authorized recordings.
+
+## Requirements
+
+- Python 3.10 or newer.
+- [`uv`](https://docs.astral.sh/uv/getting-started/installation/) to install and manage Python dependencies.
+- **FFmpeg is required for the speech-to-text audio workflow.** Install it before running the app; it is used to normalize uploaded and recorded audio, especially non-WAV files. Verify the installation with `ffmpeg -version`.
+- `espeak-ng` is needed only when using the Kokoro text-to-speech provider.
 
 ## Setup (Ubuntu)
 
